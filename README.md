@@ -83,68 +83,760 @@ The backend is a RESTful API built with Node.js and Express.js, using MongoDB fo
     -   `server.js`: The main application entry point.
 
 ### API Endpoints
-The API is prefixed with `/api`. Admin-only routes are protected and require a valid JWT from a user with an 'admin' role.
 
--   **Auth (`/api/auth`)**
-    -   `POST /login`: Authenticates an admin user and returns a JWT.
-    -   `POST /register`: (Admin Only) Registers a new user (admin/editor).
-    -   `GET /profile`: (Protected) Retrieves the logged-in user's profile.
+This section provides a detailed breakdown of all available API endpoints, including request formats, response examples, and authentication requirements.
 
--   **OTP (`/api/otp`)**
-    -   `POST /send`: Sends an OTP for verification (used in member registration).
-    -   `POST /verify`: Verifies a submitted OTP.
+---
 
--   **Members (`/api/members`)**
-    -   `POST /`: (Public) Submits a new member application with document upload.
-    -   `GET /`: (Admin Only) Get all member applications.
-    -   `GET /:id`: (Admin Only) Get a single member application.
-    -   `PUT /:id`: (Admin Only) Update a member application.
-    -   `DELETE /:id`: (Admin Only) Delete a member application.
+### **1. Authentication (`/api/auth`)**
 
--   **Media (`/api/media`)**
-    -   `GET /`: (Public) Get all media items.
-    -   `GET /:id`: (Public) Get a single media item.
-    -   `PUT /:id/view`: (Public) Increments the view count for a media item.
-    -   `POST /`: (Admin Only) Create a new media item with file uploads.
-    -   `PUT /:id`: (Admin Only) Update a media item.
-    -   `DELETE /:id`: (Admin Only) Delete a media item.
+Handles user registration and login for the admin panel.
 
--   **Programs (`/api/programs`)**
-    -   `GET /`: (Public) Get all programs.
-    -   `GET /:id`: (Public) Get a single program.
-    -   `POST /`: (Admin Only) Create a new program with uploads.
-    -   `PUT /:id`: (Admin Only) Update a program.
-    -   `DELETE /:id`: (Admin Only) Delete a program.
+#### **`POST /api/auth/login`**
 
--   **Projects (`/api/projects`)**
-    -   `GET /`: (Public) Get all projects.
-    -   `GET /:id`: (Public) Get a single project.
-    -   `POST /`: (Admin Only) Create a new project with uploads.
-    -   `PUT /:id`: (Admin Only) Update a project.
-    -   `DELETE /:id`: (Admin Only) Delete a project.
+-   **Description:** Authenticates an admin or editor user and returns a JWT.
+-   **Access:** Public
+-   **Request Body:** `application/json`
+    ```json
+    {
+      "email": "admin@example.com",
+      "password": "admin123"
+    }
+    ```
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "_id": "60d5f2f9a1b2c3d4e5f6g7h8",
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "role": "admin",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+    ```
+-   **Error Response (401 Unauthorized):**
+    ```json
+    {
+      "message": "Invalid email or password"
+    }
+    ```
 
--   **Team (`/api/team`)**
-    -   `GET /`: (Public) Get all team members.
-    -   `GET /:id`: (Public) Get a single team member.
-    -   `POST /`: (Admin Only) Create a new team member with photo upload.
-    -   `PUT /:id`: (Admin Only) Update a team member.
-    -   `DELETE /:id`: (Admin Only) Delete a team member.
+#### **`POST /api/auth/register`**
 
--   **Andolan (Movements) (`/api/andolan`)**
-    -   `GET /`: (Public) Get all Andolan events.
-    -   `POST /`: (Admin Only) Create a new Andolan event.
-    -   `PUT /:id`: (Admin Only) Update an Andolan event.
-    -   `DELETE /:id`: (Admin Only) Delete an Andolan event.
+-   **Description:** Registers a new user. Only accessible by an authenticated admin.
+-   **Access:** Private/Admin
+-   **Request Body:** `application/json`
+    ```json
+    {
+      "name": "New Editor",
+      "email": "editor@example.com",
+      "password": "password123",
+      "role": "editor"
+    }
+    ```
+-   **Success Response (201 Created):**
+    ```json
+    {
+      "_id": "60d5f3a9a1b2c3d4e5f6g7h9",
+      "name": "New Editor",
+      "email": "editor@example.com",
+      "role": "editor",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+    ```
+-   **Error Response (400 Bad Request):**
+    ```json
+    {
+      "message": "User already exists"
+    }
+    ```
 
--   **Information (`/api/information`)**
-    -   `GET /`: (Public) Get all information items.
-    -   `POST /`: (Admin Only) Create a new information item.
-    -   `PUT /:id`: (Admin Only) Update an information item.
-    -   `DELETE /:id`: (Admin Only) Delete an information item.
+#### **`GET /api/auth/profile`**
 
--   **Vision (`/api/vision`)**
-    -   `GET /`: (Public) Get the organization's vision statement.
-    -   `POST /`: (Admin Only) Create or update the vision statement.
+-   **Description:** Retrieves the profile of the currently logged-in user.
+-   **Access:** Private (Admin/Editor)
+-   **Request Headers:**
+    -   `Authorization`: `Bearer <Your_JWT>`
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "_id": "60d5f2f9a1b2c3d4e5f6g7h8",
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "role": "admin"
+    }
+    ```
+
+---
+
+### **2. OTP (`/api/otp`)**
+
+Handles sending and verifying One-Time Passwords, primarily for member registration.
+
+#### **`POST /api/otp/send`**
+
+-   **Description:** Sends an OTP to a user's phone number via Appwrite.
+-   **Access:** Public
+-   **Request Body:** `application/json`
+    ```json
+    {
+      "phone": "+911234567890"
+    }
+    ```
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "message": "OTP sent successfully.",
+      "userId": "appwrite_user_id"
+    }
+    ```
+-   **Error Response (500 Internal Server Error):**
+    ```json
+    {
+      "message": "Failed to send OTP",
+      "error": "..."
+    }
+    ```
+
+#### **`POST /api/otp/verify`**
+
+-   **Description:** Verifies an OTP submitted by the user.
+-   **Access:** Public
+-   **Request Body:** `application/json`
+    ```json
+    {
+      "userId": "appwrite_user_id",
+      "otp": "123456"
+    }
+    ```
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "message": "OTP verified successfully."
+    }
+    ```
+-   **Error Response (400 Bad Request):**
+    ```json
+    {
+      "message": "Invalid OTP or verification failed"
+    }
+    ```
+
+---
+
+### **3. Members (`/api/members`)**
+
+Manages member applications.
+
+#### **`POST /api/members`**
+
+-   **Description:** Submits a new member application. This is a `multipart/form-data` request.
+-   **Access:** Public
+-   **Form Data:**
+    -   `name`: String
+    -   `fatherName`: String
+    -   `dob`: Date (e.g., "2000-01-15")
+    -   `phone`: String
+    -   `email`: String
+    -   `address`: String
+    -   `membershipType`: String (e.g., "Youth Leadership Program")
+    -   `documents`: File (Aadhar/Voter ID)
+    -   `photo`: File (Applicant's photo)
+    -   `otpVerified`: Boolean (`true`)
+-   **Success Response (201 Created):**
+    ```json
+    {
+        "_id": "60d5f3a9a1b2c3d4e5f6g7h9",
+        "name": "John Doe",
+        "applicationStatus": "Pending",
+        // ... other fields
+    }
+    ```
+
+#### **`GET /api/members`**
+
+-   **Description:** Retrieves all member applications.
+-   **Access:** Private/Admin
+-   **Success Response (200 OK):**
+    ```json
+    [
+      {
+        "_id": "60d5f3a9a1b2c3d4e5f6g7h9",
+        "name": "John Doe",
+        "applicationStatus": "Pending",
+        // ... other fields
+      }
+    ]
+    ```
+
+#### **`GET /api/members/:id`**
+
+-   **Description:** Retrieves a single member application by its ID.
+-   **Access:** Private/Admin
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "60d5f3a9a1b2c3d4e5f6g7h9",
+        "name": "John Doe",
+        "applicationStatus": "Pending",
+        // ... other fields
+    }
+    ```
+
+#### **`PUT /api/members/:id`**
+
+-   **Description:** Updates a member's application status or notes.
+-   **Access:** Private/Admin
+-   **Request Body:** `application/json`
+    ```json
+    {
+      "applicationStatus": "Approved",
+      "notes": "Verified and approved."
+    }
+    ```
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "60d5f3a9a1b2c3d4e5f6g7h9",
+        "name": "John Doe",
+        "applicationStatus": "Approved",
+        "notes": "Verified and approved.",
+        // ... other fields
+    }
+    ```
+
+#### **`DELETE /api/members/:id`**
+
+-   **Description:** Deletes a member application and associated files from Cloudinary.
+-   **Access:** Private/Admin
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "message": "Member application removed"
+    }
+    ```
+
+---
+
+### **4. Media (`/api/media`)**
+
+Manages media items like news articles, videos, and press releases.
+
+#### **`POST /api/media`**
+
+-   **Description:** Creates a new media item. Handles file uploads for thumbnails and the main media file.
+-   **Access:** Private/Admin
+-   **Form Data:**
+    -   `title`: String
+    -   `description`: String
+    -   `category`: String (e.g., "News", "Video")
+    -   `mediaFile`: File (The main image or video file)
+    -   `thumbnailFile`: File (Optional thumbnail)
+-   **Success Response (201 Created):**
+    ```json
+    {
+        "_id": "...",
+        "title": "New Media Item",
+        "fileUrl": "http://res.cloudinary.com/...",
+        // ... other fields
+    }
+    ```
+
+#### **`GET /api/media`**
+
+-   **Description:** Retrieves all media items.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    [
+        {
+            "_id": "...",
+            "title": "New Media Item",
+            // ... other fields
+        }
+    ]
+    ```
+
+#### **`GET /api/media/:id`**
+
+-   **Description:** Retrieves a single media item by ID.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "...",
+        "title": "New Media Item",
+        // ... other fields
+    }
+    ```
+
+#### **`PUT /api/media/:id/view`**
+
+-   **Description:** Increments the view count of a media item.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "viewCount": 101
+    }
+    ```
+
+#### **`PUT /api/media/:id`**
+
+-   **Description:** Updates a media item. Can include new file uploads.
+-   **Access:** Private/Admin
+-   **Form Data:** (Similar to create)
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "...",
+        "title": "Updated Media Item",
+        // ... other fields
+    }
+    ```
+
+#### **`DELETE /api/media/:id`**
+
+-   **Description:** Deletes a media item and its associated files from Cloudinary.
+-   **Access:** Private/Admin
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "message": "Media removed"
+    }
+    ```
+
+---
+
+### **5. Programs (`/api/programs`)**
+
+Manages the organization's programs and events.
+
+#### **`POST /api/programs`**
+
+-   **Description:** Creates a new program. Supports `multipart/form-data` for a cover image and a gallery of images.
+-   **Access:** Private/Admin
+-   **Form Data:**
+    -   `name`: String
+    -   `description`: String
+    -   `status`: String (e.g., "Upcoming", "Completed")
+    -   `coverImage`: File (Single file)
+    -   `gallery`: Array of Files
+-   **Success Response (201 Created):**
+    ```json
+    {
+        "_id": "...",
+        "name": "New Program",
+        "coverImage": "http://res.cloudinary.com/...",
+        "gallery": [ { "url": "...", "publicId": "..." } ],
+        // ... other fields
+    }
+    ```
+
+#### **`GET /api/programs`**
+
+-   **Description:** Retrieves all programs.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    [
+        {
+            "_id": "...",
+            "name": "New Program",
+            // ... other fields
+        }
+    ]
+    ```
+
+#### **`GET /api/programs/:id`**
+
+-   **Description:** Retrieves a single program by ID.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "...",
+        "name": "New Program",
+        // ... other fields
+    }
+    ```
+
+#### **`PUT /api/programs/:id`**
+
+-   **Description:** Updates a program. Can handle new file uploads and updates to the gallery.
+-   **Access:** Private/Admin
+-   **Form Data:** (Similar to create)
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "...",
+        "name": "Updated Program",
+        // ... other fields
+    }
+    ```
+
+#### **`DELETE /api/programs/:id`**
+
+-   **Description:** Deletes a program and all associated images from Cloudinary.
+-   **Access:** Private/Admin
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "message": "Program removed"
+    }
+    ```
+
+---
+
+### **6. Projects (`/api/projects`)**
+
+Manages the organization's upcoming or ongoing projects.
+
+#### **`POST /api/projects`**
+
+-   **Description:** Creates a new project. Supports `multipart/form-data` for a cover image and gallery.
+-   **Access:** Private/Admin
+-   **Form Data:**
+    -   `name`: String
+    -   `description`: String
+    -   `budget`: String
+    -   `targetFarms`: String
+    -   `status`: String (e.g., "Planned", "In Progress")
+    -   `coverImage`: File
+    -   `gallery`: Array of Files
+-   **Success Response (201 Created):**
+    ```json
+    {
+        "_id": "...",
+        "name": "New Project",
+        "status": "Planned",
+        // ... other fields
+    }
+    ```
+
+#### **`GET /api/projects`**
+
+-   **Description:** Retrieves all projects.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    [
+        {
+            "_id": "...",
+            "name": "New Project",
+            // ... other fields
+        }
+    ]
+    ```
+
+#### **`GET /api/projects/:id`**
+
+-   **Description:** Retrieves a single project by ID.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "...",
+        "name": "New Project",
+        // ... other fields
+    }
+    ```
+
+#### **`PUT /api/projects/:id`**
+
+-   **Description:** Updates a project.
+-   **Access:** Private/Admin
+-   **Form Data:** (Similar to create)
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "...",
+        "name": "Updated Project",
+        // ... other fields
+    }
+    ```
+
+#### **`DELETE /api/projects/:id`**
+
+-   **Description:** Deletes a project and all associated images.
+-   **Access:** Private/Admin
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "message": "Project removed successfully"
+    }
+    ```
+
+---
+
+### **7. Team (`/api/team`)**
+
+Manages profiles of team members.
+
+#### **`POST /api/team`**
+
+-   **Description:** Creates a new team member profile. Requires a photo upload.
+-   **Access:** Private/Admin
+-   **Form Data:**
+    -   `name`: String
+    -   `role`: String
+    -   `description`: String
+    -   `photo`: File
+-   **Success Response (201 Created):**
+    ```json
+    {
+        "_id": "...",
+        "name": "Team Member Name",
+        "role": "Core Team",
+        "photo": "http://res.cloudinary.com/...",
+        // ... other fields
+    }
+    ```
+
+#### **`GET /api/team`**
+
+-   **Description:** Retrieves all team members.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    [
+        {
+            "_id": "...",
+            "name": "Team Member Name",
+            // ... other fields
+        }
+    ]
+    ```
+
+#### **`GET /api/team/:id`**
+
+-   **Description:** Retrieves a single team member by ID.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "...",
+        "name": "Team Member Name",
+        // ... other fields
+    }
+    ```
+
+#### **`PUT /api/team/:id`**
+
+-   **Description:** Updates a team member's profile. Can include a new photo.
+-   **Access:** Private/Admin
+-   **Form Data:** (Similar to create)
+-   **Success Response (200 OK):**
+    ```json
+    {
+        "_id": "...",
+        "name": "Updated Name",
+        // ... other fields
+    }
+    ```
+
+#### **`DELETE /api/team/:id`**
+
+-   **Description:** Deletes a team member and their photo.
+-   **Access:** Private/Admin
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "message": "Team member removed"
+    }
+    ```
+
+---
+
+### **8. Andolan (Movements) (`/api/andolan`)**
+
+Manages timeline events for the "Andolan" page.
+
+#### **`POST /api/andolan`**
+
+-   **Description:** Creates a new Andolan timeline event.
+-   **Access:** Private/Admin
+-   **Form Data:**
+    -   `year`: String
+    -   `title`: String
+    -   `description`: String
+    -   `image`: File (Optional)
+-   **Success Response (201 Created):**
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "...",
+        "year": "2023",
+        "title": "Historic Protest",
+        // ... other fields
+      }
+    }
+    ```
+
+#### **`GET /api/andolan`**
+
+-   **Description:** Retrieves all Andolan events.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "...",
+          "year": "2023",
+          "title": "Historic Protest"
+        }
+      ]
+    }
+    ```
+
+#### **`PUT /api/andolan/:id`**
+
+-   **Description:** Updates an Andolan event.
+-   **Access:** Private/Admin
+-   **Form Data:** (Similar to create)
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "...",
+        "title": "Updated Title",
+        // ... other fields
+      }
+    }
+    ```
+
+#### **`DELETE /api/andolan/:id`**
+
+-   **Description:** Deletes an Andolan event.
+-   **Access:** Private/Admin
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "data": {}
+    }
+    ```
+
+---
+
+### **9. Information (`/api/information`)**
+
+Manages generic information items (articles, news, announcements).
+
+#### **`POST /api/information`**
+
+-   **Description:** Creates a new information item.
+-   **Access:** Private/Admin
+-   **Form Data:**
+    -   `title`: String
+    -   `content`: String
+    -   `category`: String ("Article", "Announcement", "News")
+    -   `status`: String ("draft", "published")
+    -   `image`: File (Optional)
+-   **Success Response (201 Created):**
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "...",
+        "title": "New Announcement",
+        "category": "Announcement",
+        // ... other fields
+      }
+    }
+    ```
+
+#### **`GET /api/information`**
+
+-   **Description:** Retrieves all information items.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "...",
+          "title": "New Announcement"
+        }
+      ]
+    }
+    ```
+
+#### **`PUT /api/information/:id`**
+
+-   **Description:** Updates an information item.
+-   **Access:** Private/Admin
+-   **Form Data:** (Similar to create)
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "...",
+        "title": "Updated Announcement",
+        // ... other fields
+      }
+    }
+    ```
+
+#### **`DELETE /api/information/:id`**
+
+-   **Description:** Deletes an information item.
+-   **Access:** Private/Admin
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "data": {}
+    }
+    ```
+
+---
+
+### **10. Vision (`/api/vision`)**
+
+Manages the single "Vision & Mission" document for the organization.
+
+#### **`POST /api/vision`**
+
+-   **Description:** Creates or updates the Vision & Mission statement. Only one document is allowed in the collection.
+-   **Access:** Private/Admin
+-   **Form Data:**
+    -   `title`: String
+    -   `description`: String
+    -   `image`: File (Optional)
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "...",
+        "title": "Our Vision & Mission",
+        "description": "A detailed description...",
+        // ... other fields
+      }
+    }
+    ```
+
+#### **`GET /api/vision`**
+
+-   **Description:** Retrieves the Vision & Mission statement.
+-   **Access:** Public
+-   **Success Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "data": {
+        "_id": "...",
+        "title": "Our Vision & Mission",
+        "description": "A detailed description..."
+      }
+    }
+    ```
 
 ### Database Models
 Mongoose schemas define the structure for each collection in MongoDB. Key models include:

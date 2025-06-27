@@ -30,3 +30,5 @@ yarn-error.log*
 # Optional files
 .DS_Store
 Thumbs.db
+
+qa-reports

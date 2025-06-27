@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
 import { getAboutContent } from 'services/aboutService';
 import LoadingSpinner from 'components/ui/LoadingSpinner';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const ImpactMetrics = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -14,6 +15,15 @@ const ImpactMetrics = () => {
     programs: 0,
     states: 0
   });
+  const { language } = useLanguage();
+
+  // Default impact metrics data for fallback
+  const defaultMetrics = [
+    { icon: 'Users', color: 'primary', value: '100,000', suffix: '+', label: 'Farmers Reached' },
+    { icon: 'Home', color: 'secondary', value: '1,250', suffix: '+', label: 'Villages Covered' },
+    { icon: 'Calendar', color: 'tertiary', value: '45', suffix: '', label: 'Programs Implemented' },
+    { icon: 'Map', color: 'accent', value: '18', suffix: '', label: 'States Active' }
+  ];
 
   // Fetch about data
   useEffect(() => {
@@ -96,37 +106,54 @@ const ImpactMetrics = () => {
     }
   }, [isVisible, aboutData, targets]);
 
-  // Define metrics for display
-  const metrics = [
-    {
-      icon: 'Users',
-      label: 'Farmers Reached',
-      value: Math.round(counts.farmers).toLocaleString(),
-      suffix: '+',
-      color: 'primary'
-    },
-    {
-      icon: 'Home',
-      label: 'Villages Covered',
-      value: Math.round(counts.villages).toLocaleString(),
-      suffix: '+',
-      color: 'secondary'
-    },
-    {
-      icon: 'Calendar',
-      label: 'Programs Implemented',
-      value: Math.round(counts.programs).toLocaleString(),
-      suffix: '',
-      color: 'secondary'
-    },
-    {
-      icon: 'Map',
-      label: 'States Active',
-      value: Math.round(counts.states).toLocaleString(),
-      suffix: '',
-      color: 'primary'
-    },
-  ];
+  // Get current content based on selected language
+  const getTranslatedContent = (infoBox, field) => {
+    if (language === 'hi' && infoBox[`hindi_${field}`]) {
+      return infoBox[`hindi_${field}`];
+    }
+    return infoBox[field];
+  };
+
+  // Calculate metrics based on API response data
+  const calculateMetrics = () => {
+    if (!aboutData || !aboutData.impactMetrics) {
+      return defaultMetrics;
+    }
+    
+    const { impactMetrics } = aboutData;
+    return [
+      { 
+        icon: 'Users', 
+        color: 'primary', 
+        value: impactMetrics.farmers.toLocaleString(), 
+        suffix: '+', 
+        label: 'Farmers Reached' 
+      },
+      { 
+        icon: 'Home', 
+        color: 'secondary', 
+        value: impactMetrics.villages.toLocaleString(), 
+        suffix: '+', 
+        label: 'Villages Covered' 
+      },
+      { 
+        icon: 'Calendar', 
+        color: 'tertiary', 
+        value: impactMetrics.programs.toLocaleString(), 
+        suffix: '', 
+        label: 'Programs Implemented' 
+      },
+      { 
+        icon: 'Map', 
+        color: 'accent', 
+        value: impactMetrics.states.toLocaleString(), 
+        suffix: '', 
+        label: 'States Active' 
+      }
+    ];
+  };
+  
+  const metrics = calculateMetrics();
   
   if (loading) {
     return (
@@ -161,8 +188,12 @@ const ImpactMetrics = () => {
           <div className="flex items-start space-x-4">
             <Icon name={infoBox.icon} size={24} className="text-primary mt-1" />
             <div>
-              <h3 className="text-xl font-heading font-semibold text-primary mb-2">{infoBox.title}</h3>
-              <p className="text-text-secondary">{infoBox.description}</p>
+              <h3 className="text-xl font-heading font-semibold text-primary mb-2">
+                {getTranslatedContent(infoBox, 'title')}
+              </h3>
+              <p className="text-text-secondary">
+                {getTranslatedContent(infoBox, 'description')}
+              </p>
             </div>
           </div>
         </div>

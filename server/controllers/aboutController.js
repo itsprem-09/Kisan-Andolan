@@ -23,7 +23,9 @@ const initializeAboutContent = async () => {
         infoBoxes: [
           {
             title: "Sustainable Growth",
+            hindi_title: "स्थायी विकास",
             description: "Our movement has been growing steadily since its inception, with a 35% increase in farmer participation in the last three years alone. We're committed to reaching 250,000 farmers by 2026 through expanded programs and regional partnerships.",
+            hindi_description: "हमारा आंदोलन अपनी स्थापना के बाद से लगातार बढ़ रहा है, केवल पिछले तीन वर्षों में किसान भागीदारी में 35% की वृद्धि हुई है। हम विस्तारित कार्यक्रमों और क्षेत्रीय साझेदारियों के माध्यम से 2026 तक 250,000 किसानों तक पहुंचने के लिए प्रतिबद्ध हैं।",
             icon: "TrendingUp"
           }
         ],
@@ -32,17 +34,25 @@ const initializeAboutContent = async () => {
         testimonials: [
           {
             quote: "Kisan Andolan has transformed our village's approach to agriculture. The training on water conservation techniques helped us increase crop yields by 40% while using less water. Their practical, hands-on approach makes complex farming techniques accessible to everyone.",
+            hindi_quote: "किसान आंदोलन ने हमारे गांव के कृषि दृष्टिकोण को बदल दिया है। जल संरक्षण तकनीकों पर प्रशिक्षण ने हमें कम पानी का उपयोग करके फसल उपज को 40% तक बढ़ाने में मदद की। उनका व्यावहारिक दृष्टिकोण जटिल कृषि तकनीकों को सभी के लिए सुलभ बनाता है।",
             author: "Ramesh Patel",
+            hindi_author: "रमेश पटेल",
             role: "Farmer, Gujarat",
+            hindi_role: "किसान, गुजरात",
             image: "https://images.pexels.com/photos/1822095/pexels-photo-1822095.jpeg",
-            impact: "40% increase in crop yields"
+            impact: "40% increase in crop yields",
+            hindi_impact: "फसल उपज में 40% की वृद्धि"
           },
           {
             quote: "As a woman farmer, I faced many challenges in accessing resources and training. The Women in Agriculture program provided not just agricultural knowledge but also leadership training that helped me start a cooperative with 15 other women farmers in my village. Now we negotiate better prices and support each other.",
+            hindi_quote: "एक महिला किसान के रूप में, मुझे संसाधनों और प्रशिक्षण तक पहुंचने में कई चुनौतियों का सामना करना पड़ा। कृषि में महिलाओं के कार्यक्रम ने न केवल कृषि ज्ञान बल्कि नेतृत्व प्रशिक्षण भी प्रदान किया, जिसने मुझे अपने गांव में 15 अन्य महिला किसानों के साथ एक सहकारी शुरू करने में मदद की। अब हम बेहतर कीमतों पर बातचीत करते हैं और एक-दूसरे का समर्थन करते हैं।",
             author: "Lakshmi Devi",
+            hindi_author: "लक्ष्मी देवी",
             role: "Cooperative Leader, Tamil Nadu",
+            hindi_role: "सहकारी नेता, तमिलनाडु",
             image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-            impact: "Founded a 15-member women's cooperative"
+            impact: "Founded a 15-member women's cooperative",
+            hindi_impact: "15 सदस्यीय महिला सहकारी की स्थापना की"
           }
         ],
         
@@ -57,6 +67,7 @@ const initializeAboutContent = async () => {
         partnerCategories: [
           {
             category: "Government Partners",
+            hindi_category: "सरकारी साझेदार",
             partners: [
               "Ministry of Agriculture & Farmers Welfare",
               "State Agricultural Universities",
@@ -67,6 +78,7 @@ const initializeAboutContent = async () => {
           },
           {
             category: "Academic & Research Partners",
+            hindi_category: "शैक्षणिक और अनुसंधान साझेदार",
             partners: [
               "Punjab Agricultural University",
               "Indian Agricultural Research Institute",
@@ -326,23 +338,38 @@ const updateTestimonials = asyncHandler(async (req, res) => {
       }
     });
     
-    // Clean up temp IDs and ensure consistent data format
-    const cleanedTestimonials = testimonials.map(testimonial => {
-      const { _id, id, __v, ...cleanData } = testimonial;
+    // Process each testimonial from JSON data
+    const processedTestimonials = testimonials.map(testimonial => {
+      // Extract fields safely
+      const processedTestimonial = {
+        quote: testimonial.quote || '',
+        hindi_quote: testimonial.hindi_quote || '',
+        author: testimonial.author || '',
+        hindi_author: testimonial.hindi_author || '',
+        role: testimonial.role || '',
+        hindi_role: testimonial.hindi_role || '',
+        impact: testimonial.impact || '',
+        hindi_impact: testimonial.hindi_impact || '',
+      };
       
-      // Keep real MongoDB _id if present, remove temp IDs
-      if (_id && !_id.toString().includes('temp_')) {
-        return { _id, ...cleanData };
+      // Handle existing image URL
+      if (testimonial.image) {
+        processedTestimonial.image = testimonial.image;
       }
       
-      return cleanData;
+      // Preserve the _id if it exists and is valid
+      if (testimonial._id && !testimonial._id.startsWith('temp_')) {
+        processedTestimonial._id = testimonial._id;
+      }
+      
+      return processedTestimonial;
     });
     
     // Update the database
-    console.log(`Saving ${cleanedTestimonials.length} testimonials to database`);
+    console.log(`Saving ${processedTestimonials.length} testimonials to database`);
     const updatedAbout = await About.findOneAndUpdate(
       {},
-      { testimonials: cleanedTestimonials, updatedAt: Date.now() },
+      { testimonials: processedTestimonials, updatedAt: Date.now() },
       { new: true, runValidators: true }
     );
     

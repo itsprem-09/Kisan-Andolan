@@ -4,6 +4,7 @@ import { getAboutContent } from 'services/aboutService';
 import LoadingSpinner from 'components/ui/LoadingSpinner';
 import Modal from 'components/ui/Modal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { submitPartnerInquiry } from '../../../services/partnerInquiryService';
 
 const PartnershipSection = ({ showPartnershipModal, setShowPartnershipModal }) => {
   const [loading, setLoading] = useState(true);
@@ -156,6 +157,14 @@ const PartnershipSection = ({ showPartnershipModal, setShowPartnershipModal }) =
     ? aboutData.partnerCategories
     : defaultPartnerCategories;
 
+  // Get translated partner category
+  const getTranslatedCategory = (category) => {
+    if (language === 'hi' && category.hindi_category) {
+      return category.hindi_category;
+    }
+    return category.category;
+  };
+
   // Get partnership approach from manual translations instead of API
   const currentPartnershipApproach = partnershipApproachContent[language] || partnershipApproachContent.en;
 
@@ -182,9 +191,8 @@ const PartnershipSection = ({ showPartnershipModal, setShowPartnershipModal }) =
     }
 
     try {
-      // For now, we'll just simulate a successful submission
-      // In a real app, you would send this data to your backend API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Submit the form data to the backend API
+      await submitPartnerInquiry(formData);
       
       // Show success message
       setFormSubmitted(true);
@@ -357,25 +365,26 @@ const PartnershipSection = ({ showPartnershipModal, setShowPartnershipModal }) =
           {getTranslation('currentPartners')}
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Partner Categories */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {partnerCategories.map((category, index) => (
-            <div key={index} className="card hover:shadow-md transition-smooth">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Icon name={category.icon} size={24} color="#4a7c59" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-heading font-semibold text-primary mb-3">{category.category}</h4>
-                  <ul className="space-y-2">
-                    {category.partners.map((partner, i) => (
-                      <li key={i} className="flex items-center space-x-2 text-text-secondary">
-                        <div className="w-1.5 h-1.5 bg-secondary rounded-full flex-shrink-0"></div>
-                        <span>{partner}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            <div key={index} className="card p-6">
+              <div className="flex items-start mb-4">
+                <span className="w-10 h-10 bg-accent rounded-full flex items-center justify-center mr-3">
+                  <Icon name={category.icon} size={20} color="#4a7c59" />
+                </span>
+                <h3 className="text-lg font-heading font-semibold text-primary">
+                  {getTranslatedCategory(category)}
+                </h3>
               </div>
+              <ul className="space-y-2 text-text-secondary">
+                {category.partners.map((partner, idx) => (
+                  <li key={idx} className="flex items-center">
+                    <Icon name="ArrowRight" size={14} className="mr-2 text-primary" />
+                    <span>{partner}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>

@@ -29,9 +29,17 @@ const AboutSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        hindi_title: {
+          type: String,
+          default: '',
+        },
         description: {
           type: String,
           required: true,
+        },
+        hindi_description: {
+          type: String,
+          default: '',
         },
         icon: {
           type: String,
@@ -47,13 +55,25 @@ const AboutSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        hindi_quote: {
+          type: String,
+          default: '',
+        },
         author: {
           type: String,
           required: true,
         },
+        hindi_author: {
+          type: String,
+          default: '',
+        },
         role: {
           type: String,
           required: true,
+        },
+        hindi_role: {
+          type: String,
+          default: '',
         },
         image: {
           type: String,
@@ -62,6 +82,10 @@ const AboutSchema = new mongoose.Schema(
         impact: {
           type: String,
           required: true,
+        },
+        hindi_impact: {
+          type: String,
+          default: '',
         },
       },
     ],
@@ -88,6 +112,10 @@ const AboutSchema = new mongoose.Schema(
         category: {
           type: String,
           required: true,
+        },
+        hindi_category: {
+          type: String,
+          default: '',
         },
         partners: [{
           type: String,

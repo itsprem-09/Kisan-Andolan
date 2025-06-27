@@ -119,17 +119,31 @@ const AboutPageManagement = () => {
           fields: [
             {
               name: 'title',
-              label: 'Title',
+              label: 'Title (English)',
               type: 'text',
               defaultValue: currentItem?.title || '',
               placeholder: 'Enter info box title'
             },
             {
+              name: 'hindi_title',
+              label: 'Title (Hindi)',
+              type: 'text',
+              defaultValue: currentItem?.hindi_title || '',
+              placeholder: 'Enter info box title in Hindi'
+            },
+            {
               name: 'description',
-              label: 'Description',
+              label: 'Description (English)',
               type: 'textarea',
               defaultValue: currentItem?.description || '',
               placeholder: 'Enter info box description'
+            },
+            {
+              name: 'hindi_description',
+              label: 'Description (Hindi)',
+              type: 'textarea',
+              defaultValue: currentItem?.hindi_description || '',
+              placeholder: 'Enter info box description in Hindi'
             },
             {
               name: 'icon',
@@ -154,31 +168,59 @@ const AboutPageManagement = () => {
           fields: [
             {
               name: 'quote',
-              label: 'Quote',
+              label: 'Quote (English)',
               type: 'textarea',
               defaultValue: currentItem?.quote || '',
               placeholder: 'Enter testimonial quote'
             },
             {
+              name: 'hindi_quote',
+              label: 'Quote (Hindi)',
+              type: 'textarea',
+              defaultValue: currentItem?.hindi_quote || '',
+              placeholder: 'Enter testimonial quote in Hindi'
+            },
+            {
               name: 'author',
-              label: 'Author Name',
+              label: 'Author Name (English)',
               type: 'text',
               defaultValue: currentItem?.author || '',
               placeholder: 'Enter author name'
             },
             {
+              name: 'hindi_author',
+              label: 'Author Name (Hindi)',
+              type: 'text',
+              defaultValue: currentItem?.hindi_author || '',
+              placeholder: 'Enter author name in Hindi'
+            },
+            {
               name: 'role',
-              label: 'Role/Position',
+              label: 'Role/Position (English)',
               type: 'text',
               defaultValue: currentItem?.role || '',
               placeholder: 'Enter author role or position'
             },
             {
+              name: 'hindi_role',
+              label: 'Role/Position (Hindi)',
+              type: 'text',
+              defaultValue: currentItem?.hindi_role || '',
+              placeholder: 'Enter author role or position in Hindi'
+            },
+            {
               name: 'impact',
-              label: 'Impact Highlight',
+              label: 'Impact Highlight (English)',
               type: 'text',
               defaultValue: currentItem?.impact || '',
               placeholder: 'Enter impact highlight (e.g. "40% increase in crop yields")'
+            },
+            {
+              name: 'hindi_impact',
+              label: 'Impact Highlight (Hindi)',
+              type: 'text',
+              defaultValue: currentItem?.hindi_impact || '',
+              placeholder: 'Enter impact highlight in Hindi'
             },
             {
               name: 'image',
@@ -247,10 +289,17 @@ const AboutPageManagement = () => {
           fields: [
             {
               name: 'category',
-              label: 'Category Name',
+              label: 'Category Name (English)',
               type: 'text',
               defaultValue: currentItem?.category || '',
               placeholder: 'Enter partner category name'
+            },
+            {
+              name: 'hindi_category',
+              label: 'Category Name (Hindi)',
+              type: 'text',
+              defaultValue: currentItem?.hindi_category || '',
+              placeholder: 'Enter partner category name in Hindi'
             },
             {
               name: 'icon',
@@ -338,12 +387,16 @@ const AboutPageManagement = () => {
           if (formData instanceof FormData) {
             // Extract data from FormData
             newInfoBox.title = formData.get('title') || '';
+            newInfoBox.hindi_title = formData.get('hindi_title') || '';
             newInfoBox.description = formData.get('description') || '';
+            newInfoBox.hindi_description = formData.get('hindi_description') || '';
             newInfoBox.icon = formData.get('icon') || 'TrendingUp';
           } else {
             // Regular object
             newInfoBox.title = formData.title || '';
+            newInfoBox.hindi_title = formData.hindi_title || '';
             newInfoBox.description = formData.description || '';
+            newInfoBox.hindi_description = formData.hindi_description || '';
             newInfoBox.icon = formData.icon || 'TrendingUp';
           }
           
@@ -387,129 +440,99 @@ const AboutPageManagement = () => {
             
             // Extract testimonial data from form
             const testimonialData = {
-              quote: formData instanceof FormData ? formData.get('quote') : formData.quote,
-              author: formData instanceof FormData ? formData.get('author') : formData.author,
-              role: formData instanceof FormData ? formData.get('role') : formData.role,
-              impact: formData instanceof FormData ? formData.get('impact') : formData.impact
+              quote: '',
+              hindi_quote: '',
+              author: '',
+              hindi_author: '',
+              role: '',
+              hindi_role: '',
+              impact: '',
+              hindi_impact: '',
+              image: ''
             };
             
-            // Update or add testimonial
-            if (currentItem) {
-              // Find the testimonial to edit
-              const index = testimonials.findIndex(t => 
-                (t._id && t._id === currentItem._id) || 
-                JSON.stringify(t) === JSON.stringify(currentItem)
-              );
+            // Check if we're getting FormData or regular object
+            if (formData instanceof FormData) {
+              // Extract data from FormData
+              testimonialData.quote = formData.get('quote') || '';
+              testimonialData.hindi_quote = formData.get('hindi_quote') || '';
+              testimonialData.author = formData.get('author') || '';
+              testimonialData.hindi_author = formData.get('hindi_author') || '';
+              testimonialData.role = formData.get('role') || '';
+              testimonialData.hindi_role = formData.get('hindi_role') || '';
+              testimonialData.impact = formData.get('impact') || '';
+              testimonialData.hindi_impact = formData.get('hindi_impact') || '';
               
-              if (index !== -1) {
-                // Update existing testimonial with new data
-                testimonials[index] = {
-                  ...testimonials[index],
-                  ...testimonialData
-                };
-                
-                // Ensure _id is passed to the server if we're editing
-                if (testimonials[index]._id) {
-                  testimonialFormData.append('_id', testimonials[index]._id);
-                  console.log(`Editing testimonial with ID: ${testimonials[index]._id}`);
-                }
-                
-                // Handle image upload if provided
-                let imageFile = null;
-                if (formData instanceof FormData) {
-                  imageFile = formData.get('image');
-                } else if (formData.image instanceof File) {
-                  imageFile = formData.image;
-                }
-                
-                // Only append image if it's a file and has size
-                if (imageFile instanceof File && imageFile.size > 0) {
-                  console.log(`Adding image file for testimonial ${index}: ${imageFile.name} (${imageFile.size} bytes)`);
-                  testimonialFormData.append('image', imageFile);
-                } else if (currentItem.image) {
-                  // Pass existing image URL if available
-                  console.log(`Preserving existing image: ${currentItem.image}`);
-                  testimonialFormData.append('existingImageUrl', currentItem.image);
-                }
-              } else {
-                console.error('Could not find testimonial to update');
-                setError('Could not locate the testimonial to update');
-                setLoading(false);
-                return;
-              }
-            } else {
-              // Add new testimonial with temp ID for tracking
-              const newTestimonial = { 
-                ...testimonialData,
-                _id: `temp_${Date.now()}`
-              };
-              testimonials.push(newTestimonial);
-              
-              // Handle image upload for new testimonial
-              let imageFile = null;
-              if (formData instanceof FormData) {
-                imageFile = formData.get('image');
-              } else if (formData.image instanceof File) {
-                imageFile = formData.image;
-              }
-              
-              // Add image file if provided
+              // Handle image upload
+              const imageFile = formData.get('image');
               if (imageFile instanceof File && imageFile.size > 0) {
-                console.log(`Adding image for new testimonial: ${imageFile.name} (${imageFile.size} bytes)`);
-                if (imageFile.size > 10 * 1024 * 1024) {
-                  setError('Image file is too large. Please use an image smaller than 10MB.');
-                  setLoading(false);
-                  return;
-                }
+                // Add image file to FormData for upload
                 testimonialFormData.append('image', imageFile);
+              } else if (currentItem?.image) {
+                // Keep existing image if no new one is provided
+                testimonialData.image = currentItem.image;
               }
+              
+              // Add all other testimonial data to the FormData
+              Object.entries(testimonialData).forEach(([key, value]) => {
+                if (value) testimonialFormData.append(key, value);
+              });
+              
+            } else {
+              // Extract data from regular object
+              testimonialData.quote = formData.quote || '';
+              testimonialData.hindi_quote = formData.hindi_quote || '';
+              testimonialData.author = formData.author || '';
+              testimonialData.hindi_author = formData.hindi_author || '';
+              testimonialData.role = formData.role || '';
+              testimonialData.hindi_role = formData.hindi_role || '';
+              testimonialData.impact = formData.impact || '';
+              testimonialData.hindi_impact = formData.hindi_impact || '';
+              testimonialData.image = formData.image || currentItem?.image || '';
+              
+              // Add all testimonial data to the FormData
+              Object.entries(testimonialData).forEach(([key, value]) => {
+                if (value) testimonialFormData.append(key, value);
+              });
             }
             
-            // Add testimonials JSON data to FormData
-            testimonialFormData.append('testimonials', JSON.stringify(testimonials));
-            
-            // Log the final form data for debugging
-            console.log(`Sending update with ${testimonials.length} testimonials`);
-            for (const [key, value] of testimonialFormData.entries()) {
-              if (value instanceof File) {
-                console.log(`FormData: ${key} = File: ${value.name} (${value.size} bytes)`);
-              } else if (key === 'testimonials') {
-                console.log(`FormData: ${key} = [JSON data]`);
-              } else {
-                console.log(`FormData: ${key} = ${value}`);
-              }
+            // Add _id if editing existing testimonial
+            if (currentItem?._id) {
+              testimonialFormData.append('_id', currentItem._id);
             }
             
-            // Display uploading message
-            setError('Uploading image and updating testimonial... This may take a moment.');
-            
-            // Set up timeout for UI feedback
-            const timeoutId = setTimeout(() => {
-              setError('Still uploading... Please be patient with large image files.');
-            }, 10000);
-            
-            try {
-              // Send request with FormData
-              response = await aboutService.updateTestimonials(testimonialFormData);
-              
-              // Clear timeout
-              clearTimeout(timeoutId);
-              
-              // Update state and close modal
-              setAboutData(prevState => ({
-                ...prevState,
-                testimonials: response.data
-              }));
-              
-              setError(null);
-              handleCloseModal();
-            } catch (err) {
-              clearTimeout(timeoutId);
-              console.error('Error updating testimonial:', err);
-              setError(`Failed to update testimonial: ${err.message || 'Unknown error'}`);
-            } finally {
-              setLoading(false);
+            // Prepare testimonials array
+            let updatedTestimonials;
+            if (currentItem) {
+              // Update existing testimonial
+              updatedTestimonials = testimonials.map(item => {
+                if ((item._id && item._id === currentItem._id) || item === currentItem) {
+                  return { ...item, ...testimonialData };
+                }
+                return item;
+              });
+            } else {
+              // Add new testimonial
+              updatedTestimonials = [...testimonials, testimonialData];
             }
+            
+            // Add the full testimonials array to the FormData
+            testimonialFormData.append('testimonials', JSON.stringify(updatedTestimonials));
+            
+            console.log('Sending testimonial data:', updatedTestimonials);
+            
+            // Make API request
+            response = await aboutService.updateTestimonials(testimonialFormData);
+            console.log('Testimonial update response:', response);
+            
+            // Update local state
+            setAboutData(prevState => ({
+              ...prevState,
+              testimonials: response.data
+            }));
+            
+            // Close the modal after successful update
+            handleCloseModal();
           } catch (err) {
             console.error('Error in testimonial form handling:', err);
             setError(`Error processing testimonial: ${err.message || 'Unknown error'}`);
@@ -558,88 +581,77 @@ const AboutPageManagement = () => {
           break;
           
         case 'partners':
-          // Process the form data
-          let partnersList = [];
-          let partnerCategory = '';
-          let partnerIcon = '';
-          
           try {
+            // Process partner data
+            let partnerCategory = {};
+            
             if (formData instanceof FormData) {
+              // Extract category data from FormData
+              partnerCategory.category = formData.get('category') || '';
+              partnerCategory.hindi_category = formData.get('hindi_category') || '';
+              partnerCategory.icon = formData.get('icon') || 'Building';
+              
+              // Process partners text as an array (one per line)
               const partnersText = formData.get('partners') || '';
-              console.log('Raw partners text from form:', partnersText);
-              
-              // Split by newlines first, then try commas if no newlines found
-              if (partnersText.includes('\n')) {
-                partnersList = partnersText.split('\n').filter(partner => partner.trim() !== '');
-              } else {
-                partnersList = partnersText.split(',').filter(partner => partner.trim() !== '');
-              }
-              
-              partnerCategory = formData.get('category') || '';
-              partnerIcon = formData.get('icon') || 'Building';
+              partnerCategory.partners = partnersText
+                .split('\n')
+                .map(p => p.trim())
+                .filter(p => p);
             } else {
-              console.log('Raw partners data from form object:', formData.partners);
+              // Extract from regular object
+              partnerCategory.category = formData.category || '';
+              partnerCategory.hindi_category = formData.hindi_category || '';
+              partnerCategory.icon = formData.icon || 'Building';
               
-              // Handle different input types for partners
-              if (typeof formData.partners === 'string') {
-                // Split by newlines first, then try commas if no newlines found
-                if (formData.partners.includes('\n')) {
-                  partnersList = formData.partners.split('\n').filter(partner => partner.trim() !== '');
-                } else {
-                  partnersList = formData.partners.split(',').filter(partner => partner.trim() !== '');
-                }
-              } else if (Array.isArray(formData.partners)) {
-                partnersList = formData.partners.filter(Boolean);
-              } else {
-                partnersList = [];
-              }
-              
-              partnerCategory = formData.category || '';
-              partnerIcon = formData.icon || 'Building';
+              // Process partners text as an array (one per line)
+              const partnersText = formData.partners || '';
+              partnerCategory.partners = partnersText
+                .split('\n')
+                .map(p => p.trim())
+                .filter(p => p);
             }
             
-            console.log('Processed partner data:', { category: partnerCategory, icon: partnerIcon, partnersList });
+            console.log('Processed partner category:', partnerCategory);
+            
+            // Get current partner categories
+            const partnerCategories = [...(aboutData.partnerCategories || [])];
+            
+            // Update or add partner category
+            let updatedPartnerCategories;
+            if (currentItem) {
+              // Update existing category
+              updatedPartnerCategories = partnerCategories.map(cat => 
+                (cat._id && cat._id === currentItem._id) || cat === currentItem ? 
+                  { ...cat, ...partnerCategory } : cat
+              );
+            } else {
+              // Add new category
+              updatedPartnerCategories = [...partnerCategories, partnerCategory];
+            }
+            
+            console.log('Updating partner categories:', updatedPartnerCategories);
+            
+            // Make API request
+            response = await aboutService.updatePartners(updatedPartnerCategories);
+            
+            // Update local state
+            setAboutData(prevState => ({
+              ...prevState,
+              partnerCategories: response.data
+            }));
+
+            // Close the modal after successful update
+            handleCloseModal();
           } catch (err) {
             console.error('Error processing partner data:', err);
             setError(`Error processing partner data: ${err.message}`);
-            partnersList = [];
+            partnerCategory.partners = [];
           }
-          
-          const newPartnerCategory = {
-            category: partnerCategory,
-            icon: partnerIcon,
-            partners: partnersList
-          };
-          
-          // If editing, update the existing partner category
-          let updatedPartnerCategories;
-          if (currentItem) {
-            updatedPartnerCategories = aboutData.partnerCategories.map(cat => 
-              (cat._id && cat._id === currentItem._id) || cat === currentItem ? 
-                { ...cat, ...newPartnerCategory } : cat
-            );
-          } else {
-            // If adding new, append to array
-            updatedPartnerCategories = [...aboutData.partnerCategories, newPartnerCategory];
-          }
-          
-          console.log('Updated partner categories:', updatedPartnerCategories);
-          
-          response = await aboutService.updatePartners(updatedPartnerCategories);
-          
-          // Update local state
-          setAboutData(prevState => ({
-            ...prevState,
-            partnerCategories: response.data
-          }));
           break;
           
         default:
           throw new Error('Invalid section for update');
       }
-      
-      // Close the modal after successful update
-      handleCloseModal();
       
     } catch (err) {
       console.error(`Failed to update ${currentSection}:`, err);

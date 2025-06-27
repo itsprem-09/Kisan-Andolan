@@ -9,6 +9,7 @@ import ContentManagement from './components/ContentManagement';
 import MemberApplications from './components/MemberApplications';
 import TimelineManagement from './components/TimelineManagement';
 import AboutPageManagement from './components/AboutPageManagement';
+import PartnerInquiriesManagement from './components/PartnerInquiriesManagement';
 import { useAuth } from 'contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -112,6 +113,13 @@ const AdminDashboard = () => {
       action: "manage-about"
     },
     {
+      title: "View Partnership Inquiries",
+      description: "Check and respond to partnership requests",
+      icon: "Handshake",
+      count: null,
+      action: "partner-inquiries"
+    },
+    {
       title: "Upload Media",
       description: "Add new images and videos to media library",
       icon: "Upload",
@@ -132,7 +140,8 @@ const AdminDashboard = () => {
     { id: 'content', label: 'Content Management', icon: 'FileText' },
     { id: 'members', label: 'Member Applications', icon: 'Users' },
     { id: 'timeline', label: 'Timeline Management', icon: 'Clock' },
-    { id: 'about', label: 'About Page', icon: 'Info' }
+    { id: 'about', label: 'About Page', icon: 'Info' },
+    { id: 'partner-inquiries', label: 'Partnership Inquiries', icon: 'Handshake' }
   ];
 
   const handleQuickAction = (action) => {
@@ -151,6 +160,9 @@ const AdminDashboard = () => {
         break;
       case 'manage-about':
         setActiveSection('about');
+        break;
+      case 'partner-inquiries':
+        setActiveSection('partner-inquiries');
         break;
       case 'upload-media':
         // Handle media upload
@@ -175,6 +187,8 @@ const AdminDashboard = () => {
         return <TimelineManagement />;
       case 'about':
         return <AboutPageManagement />;
+      case 'partner-inquiries':
+        return <PartnerInquiriesManagement />;
       default:
         return (
           <div className="space-y-8">

@@ -46,6 +46,7 @@ const razorpayRoutes = require('./routes/razorpayRoutes');
 const timelineRoutes = require('./routes/timelineRoutes');
 const aboutRoutes = require('./routes/aboutRoutes');
 const bannerRoutes = require('./routes/bannerRoutes');
+const partnerInquiryRoutes = require('./routes/partnerInquiryRoutes');
 
 // Import middleware
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
@@ -77,6 +78,7 @@ app.use('/api/donate', razorpayRoutes);
 app.use('/api/timeline', timelineRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/banner', bannerRoutes);
+app.use('/api/partnership-inquiries', partnerInquiryRoutes);
 // app.use('/api/admin', require('./routes/adminRoutes')); // Placeholder for specific admin panel routes if needed beyond CRUD
 
 app.get('/getKey', (req, res) => {

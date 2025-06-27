@@ -21,7 +21,8 @@ app.use(cors({
     'https://api.rashtriyakisanmanch.com', 
     'http://localhost:4028', 
     'http://localhost:3000', 
-    'https://kishan-andolan.vercel.app'
+    'https://kishan-andolan.vercel.app',
+    'https://kisan-andolan.vercel.app'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

@@ -1,4 +1,4 @@
-const Banner = require('../models/banner');
+const Banner = require('../models/Banner');
 const { cloudinaryDeleteImage } = require('../config/cloudinaryConfig');
 
 const createBanner = async (req, res) => {
